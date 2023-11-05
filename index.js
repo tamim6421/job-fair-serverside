@@ -2,6 +2,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const { MongoClient, ServerApiVersion, Collection, ObjectId } = require('mongodb');
 require('dotenv').config()
 
 const port = process.env.PORT || 5000 
@@ -14,7 +15,7 @@ app.use(express.json())
 
 
 
-const { MongoClient, ServerApiVersion, Collection } = require('mongodb');
+
 const uri = `mongodb+srv://${process.env.PROJECT_NAME}:${process.env.PROJECT_PASS}@cluster0.iimwc2a.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -45,7 +46,7 @@ app.get('/category', async(req, res) =>{
 
 // get all jobs 
 app.get('/jobs', async(req, res) =>{
-  console.log(req.query.category)
+  // console.log(req.query.category)
 
   let query = {}
   if(req.query?.category){
@@ -56,7 +57,13 @@ app.get('/jobs', async(req, res) =>{
     res.send(result)
 })
 
-
+// get job by id 
+app.get('/jobs/:id', async(req, res) =>{
+  const id = req.params.id 
+  const query = {_id: new ObjectId(id)}
+  const result = await jobsCollections.findOne(query)
+  res.send(result)
+})
 
 
 
