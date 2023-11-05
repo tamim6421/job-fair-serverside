@@ -56,6 +56,34 @@ app.get('/category', async(req, res) =>{
         res.send(result)
     })
 
+
+
+    // update add job data 
+app.put('/jobs/:id', async(req, res) =>{
+  const id = req.params.id 
+  const filter = {_id: new ObjectId(id)}
+  const updateJobs = req.body 
+  console.log(updateJobs)
+  const option = {upsert: true}
+  const jobs ={
+    $set:{
+      jobTitle:updateJobs.jobTitle,
+       deadline:updateJobs.deadline,
+       priceRange:updateJobs.priceRange,
+       shortDescription:updateJobs.shortDescription,
+       category:updateJobs.category,
+       maximumPrice:updateJobs.maximumPrice,
+       minimumPrice:updateJobs.minimumPrice
+
+    }
+  }
+  const result = await jobsCollections.updateOne(filter, jobs, option)
+  res.send(result)
+})
+
+
+
+
 // get all jobs by using category
 app.get('/jobs', async (req, res) => {
   const employerEmail = req.query.employerEmail;
@@ -81,17 +109,10 @@ app.get('/jobs', async (req, res) => {
 });
 
 
-// get  jobs by using email
-app.get('/jobs', async(req, res) =>{
-  // console.log(req.query.category)
-  console.log(req.query)
 
-  let query = {}
- 
-    // const cursor = jobsCollections.find()
-    // const result = await cursor.toArray()
-    // res.send(result)
-})
+
+
+
 
 // get job by id 
 app.get('/jobs/:id', async(req, res) =>{
