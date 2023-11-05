@@ -35,6 +35,8 @@ async function run() {
     // database Collection
     const categoryCollections = client.db('job_fair').collection('services')
     const jobsCollections = client.db('job_fair').collection('all_jobs')
+    const bidProjectCollection = client.db('job_fair').collection('bidData')
+   
 
 
 // get category 
@@ -62,6 +64,14 @@ app.get('/jobs/:id', async(req, res) =>{
   const id = req.params.id 
   const query = {_id: new ObjectId(id)}
   const result = await jobsCollections.findOne(query)
+  res.send(result)
+})
+
+// post bid on the Project data 
+app.post('/bidProject', async(req, res) =>{
+  const data = req.body 
+  console.log(data)
+  const result = await bidProjectCollection.insertOne(data)
   res.send(result)
 })
 
