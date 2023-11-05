@@ -46,17 +46,51 @@ app.get('/category', async(req, res) =>{
     res.send(result)
 })
 
-// get all jobs 
+
+
+    // post add jobs in the database 
+    app.post('/jobs', async(req, res) =>{
+        const jobs = req.body 
+        console.log(jobs)
+        const result = await jobsCollections.insertOne(jobs)
+        res.send(result)
+    })
+
+// get all jobs by using category
+app.get('/jobs', async (req, res) => {
+  const employerEmail = req.query.employerEmail;
+  const category = req.query.category;
+
+  let query = {};
+  if (employerEmail) {
+    query.employerEmail = employerEmail;
+  }
+
+  let catQueryObj = {};
+  if (category) {
+    catQueryObj.category = category;
+  }
+
+  console.log('email', query);
+  console.log('cat', catQueryObj);
+
+  const cursor = jobsCollections.find({ ...catQueryObj, ...query });
+  const result = await cursor.toArray();
+
+  res.send(result);
+});
+
+
+// get  jobs by using email
 app.get('/jobs', async(req, res) =>{
   // console.log(req.query.category)
+  console.log(req.query)
 
   let query = {}
-  if(req.query?.category){
-    query={category: req.query.category}
-  }
-    const cursor = jobsCollections.find(query)
-    const result = await cursor.toArray()
-    res.send(result)
+ 
+    // const cursor = jobsCollections.find()
+    // const result = await cursor.toArray()
+    // res.send(result)
 })
 
 // get job by id 
