@@ -32,6 +32,31 @@ const client = new MongoClient(uri, {
   }
 });
 
+
+const verifyToken = async(req, res, next) =>{
+  const token = req.cookies?.token 
+  console.log('middleware token', token)
+
+  if(!token){
+      return res.status(401).send({message:'not authorized'})
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+      // error 
+      if(err){
+          return res.status(401).send({message: 'unauthorized'})
+      }
+      console.log('decoded', decoded)
+      req.user = decoded
+      next()
+  })
+ 
+} 
+
+const logger = (req, res, next) =>{
+  console.log('log Infu ',req.method, req.url)
+  next()
+}
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -45,12 +70,12 @@ async function run() {
 
 
   // token related api 
-  app.post('/jwtToken', async(req, res) =>{
+  app.post('/jwt', async(req, res) =>{
     const user = req.body
     console.log("user for token" ,user)
     const token = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn: '1hr'})
     res.
-    cookie('token', token, {httpOnly: true, secure: true, sameSite:'none'})
+    cookie('token', token, {httpOnly: true, secure: true,})
     .send({success: true})
 })
 
@@ -119,9 +144,18 @@ app.delete('/jobs/:id', async(req, res) =>{
 
 
 // get all jobs by using category and email
-app.get('/jobs', async (req, res) => {
+app.get('/jobs',logger, async (req, res) => {
+  // console.log('req info', req.user)
+  console.log('cooooook', req.cookies)
+
   const employerEmail = req.query.employerEmail;
   const category = req.query.category;
+
+
+  // if(req.user.email !== req.query.employerEmail){
+  //   return res.status(403).send({message: 'Forbidden Access'})
+  // }
+
 
   let query = {};
   if (employerEmail) {
@@ -171,7 +205,6 @@ app.post('/bidProject', async(req, res) =>{
 
 // get my bids all jobs 
 app.get('/bidProject', async(req, res) =>{
-  console.log(req.query)
   const email = req.query.email;
 
   let query = {};
@@ -185,6 +218,22 @@ console.log('email', query)
   res.send(result)
 })
 
+
+// update job status with click Bid request reject button 
+
+app.patch('/bidProject/:id', async(req, res) =>{
+  const id = req.params.id 
+  const filter ={_id: new ObjectId(id)}
+  const updateStatus = req.body 
+  const updateDoc = {
+    $set:{
+      status:updateStatus.status
+    }
+  }
+  console.log(updateStatus)
+  const result = await bidProjectCollection.updateOne(filter, updateDoc)
+  res.send(result)
+})
 
 
 
