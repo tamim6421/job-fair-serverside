@@ -56,6 +56,13 @@ async function run() {
 
 
 
+// remove token in logout user 
+app.post('/logout', async(req, res) =>{
+  const user = req.body
+  console.log('loggout user', user)
+  res.clearCookie('token', {maxAge: 0}).send({success: true})
+})
+
 
 
 // get category 
