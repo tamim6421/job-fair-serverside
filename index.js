@@ -107,8 +107,8 @@ app.get('/jobs', async (req, res) => {
     catQueryObj.category = category;
   }
 
-  console.log('email', query);
-  console.log('cat', catQueryObj);
+  // console.log('email', query);
+  // console.log('cat', catQueryObj);
 
   const cursor = jobsCollections.find({ ...catQueryObj, ...query });
   const result = await cursor.toArray();
@@ -141,9 +141,20 @@ app.post('/bidProject', async(req, res) =>{
   res.send(result)
 })
 
+
+
 // get my bids all jobs 
 app.get('/bidProject', async(req, res) =>{
-  const cursor = bidProjectCollection.find()
+  console.log(req.query)
+  const email = req.query.email;
+
+  let query = {};
+  if (email) {
+    query.email = email;
+  }
+console.log('email', query)
+
+  const cursor = bidProjectCollection.find({...query})
   const result = await cursor.toArray()
   res.send(result)
 })
