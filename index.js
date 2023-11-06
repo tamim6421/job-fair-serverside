@@ -2,6 +2,8 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, Collection, ObjectId } = require('mongodb');
 require('dotenv').config()
 
@@ -9,9 +11,12 @@ const port = process.env.PORT || 5000
 
 
 // middleware 
-app.use(cors())
+app.use(cors({
+  origin: ['http://localhost:5173'],
+  credentials: true,
+}))
 app.use(express.json())
-
+app.use(cookieParser())
 
 
 
@@ -37,6 +42,20 @@ async function run() {
     const jobsCollections = client.db('job_fair').collection('all_jobs')
     const bidProjectCollection = client.db('job_fair').collection('bidData')
    
+
+
+  // token related api 
+  app.post('/jwtToken', async(req, res) =>{
+    const user = req.body
+    console.log("user for token" ,user)
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn: '1hr'})
+    res.
+    cookie('token', token, {httpOnly: true, secure: true, sameSite:'none'})
+    .send({success: true})
+})
+
+
+
 
 
 // get category 
