@@ -58,12 +58,12 @@ app.get('/category', async(req, res) =>{
 
 
 
-    // update add job data 
+    // update added  job data 
 app.put('/jobs/:id', async(req, res) =>{
   const id = req.params.id 
   const filter = {_id: new ObjectId(id)}
   const updateJobs = req.body 
-  console.log(updateJobs)
+  // console.log(updateJobs)
   const option = {upsert: true}
   const jobs ={
     $set:{
@@ -82,9 +82,17 @@ app.put('/jobs/:id', async(req, res) =>{
 })
 
 
+// delete posted job 
+app.delete('/jobs/:id', async(req, res) =>{
+  const id = req.params.id 
+  const query = {_id: new ObjectId(id)}
+  const result = await jobsCollections.deleteOne(query)
+  res.send(result)
+})
 
 
-// get all jobs by using category
+
+// get all jobs by using category and email
 app.get('/jobs', async (req, res) => {
   const employerEmail = req.query.employerEmail;
   const category = req.query.category;
@@ -122,6 +130,9 @@ app.get('/jobs/:id', async(req, res) =>{
   res.send(result)
 })
 
+
+
+
 // post bid on the Project data 
 app.post('/bidProject', async(req, res) =>{
   const data = req.body 
@@ -129,6 +140,14 @@ app.post('/bidProject', async(req, res) =>{
   const result = await bidProjectCollection.insertOne(data)
   res.send(result)
 })
+
+// get my bids all jobs 
+app.get('/bidProject', async(req, res) =>{
+  const cursor = bidProjectCollection.find()
+  const result = await cursor.toArray()
+  res.send(result)
+})
+
 
 
 
