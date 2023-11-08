@@ -16,7 +16,11 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [
+      "http://localhost:5173",
+     "https://job-fair-1170a.web.app",
+      'https://job-fair-1170a.firebaseapp.com'
+    ],
     credentials: true,
   })
 );
@@ -83,7 +87,7 @@ const logger = (req, res, next) => {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+   
 
     // database Collection
     const categoryCollections = client.db("job_fair").collection("services");
@@ -98,9 +102,11 @@ async function run() {
         expiresIn: "1hr",
       });
       res
-        .cookie("token", token, { httpOnly: true, secure: false })
+        .cookie("token", token, { httpOnly: true, secure: true, sameSite: 'none'})
         .send({ success: true });
     });
+
+
 
     // remove token in logout user
     app.post("/logout", async (req, res) => {
@@ -155,15 +161,19 @@ async function run() {
     });
 
     // get all jobs by using category and email
-    app.get("/jobs", verifyToken, async (req, res) => {
-      // console.log('req info', req.user)
+  app.get("/jobs",  async (req, res) => {
+      console.log('req query', req.query)
       console.log("cooooook", req.cookies);
 
-      const employerEmail = req.query.employerEmail;
+      const employerEmail = req.query.email;
       const category = req.query.category;
+      console.log('employer email', employerEmail)
+      console.log('user email email', category)
+      
 
-      // if(req.user.email !== req.query.employerEmail){
-      //   return res.status(403).send({message: 'Forbidden Access'})
+      // if(req.user.email != req.query.employerEmail){
+      //    res.status(403).send({message: 'Forbidden Access'})
+      //    return
       // }
 
       let query = {};
@@ -180,6 +190,42 @@ async function run() {
       // console.log('cat', catQueryObj);
 
       const cursor = jobsCollections.find({ ...catQueryObj, ...query });
+      const result = await cursor.toArray();
+
+      res.send(result);
+    });
+
+
+  app.get("/findjobs", verifyToken, async (req, res) => {
+      console.log('req query', req.query)
+     
+
+      const employerEmail = req.query.email;
+      
+      console.log('employer email', employerEmail)
+    
+      console.log('user email email', req.user.email)
+      
+
+      if(req.user.email != employerEmail ){
+         res.status(403).send({message: 'Forbidden Access'})
+         return
+      }
+
+      let query = {};
+      if (employerEmail) {
+        query.employerEmail = employerEmail;
+      }
+
+      // let catQueryObj = {};
+      // if (category) {
+      //   catQueryObj.category = category;
+      // }
+
+      // console.log('email', query);
+      // console.log('cat', catQueryObj);
+
+      const cursor = jobsCollections.find({  ...query });
       const result = await cursor.toArray();
 
       res.send(result);
@@ -203,13 +249,15 @@ async function run() {
 
     // get my bids all jobs
     app.get("/bidProject", verifyToken, async (req, res) => {
-      const employerEmail = req.query.employerEmail;
-      console.log('employer email', employerEmail)
+      // const employerEmail = req.query.employerEmail;
+      // console.log('employer email', employerEmail)
+
+
       const email = req.query.email;
     console.log(req.query)
     console.log('user', req.user)
 
-    if(req.query.email !== req.user.email){
+    if(req.query.email != req.user.email){
       return res.status(403).send({message: 'forbidden access'})
     }
 
@@ -220,6 +268,13 @@ async function run() {
       console.log("email", query);
 
       const cursor = bidProjectCollection.find({ ...query }).sort({status: 1});
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+
+    app.get("/request", async (req, res) => {
+      const cursor = bidProjectCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
