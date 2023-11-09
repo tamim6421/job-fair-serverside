@@ -157,6 +157,20 @@ async function run() {
       res.send(result);
     });
 
+
+    // find all jobs
+    app.get('/all', async(req, res) =>{
+      const searchText = req.query
+      // console.log(searchText)
+      const query = {
+        category:{$regex: searchText.search, $options: 'i'}
+      }
+      const cursor = jobsCollections.find(query)
+      const result = await cursor.toArray()
+      res.send(result)
+    })
+
+
     app.get("/findjobs", verifyToken, async (req, res) => {
 
       const employerEmail = req.query.email;
@@ -235,6 +249,9 @@ async function run() {
       const result = await bidProjectCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+
+
+    
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
