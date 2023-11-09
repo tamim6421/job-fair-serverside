@@ -62,11 +62,6 @@ const verifyToken = async (req, res, next) => {
 
 
 
-const logger = (req, res, next) => {
-  console.log("log Infu ", req.method, req.url);
-  next();
-};
-
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -79,7 +74,6 @@ async function run() {
     // token related api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      console.log("user for token", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
         expiresIn: "1hr",
       });
@@ -95,7 +89,6 @@ async function run() {
     // remove token in logout user
     app.post("/logout", async (req, res) => {
       const user = req.body;
-      console.log("loggout user", user);
       res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
@@ -109,7 +102,6 @@ async function run() {
     // post add jobs in the database
     app.post("/jobs", async (req, res) => {
       const jobs = req.body;
-      console.log(jobs);
       const result = await jobsCollections.insertOne(jobs);
       res.send(result);
     });
@@ -119,7 +111,6 @@ async function run() {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updateJobs = req.body;
-      // console.log(updateJobs)
       const option = { upsert: true };
       const jobs = {
         $set: {
@@ -146,15 +137,10 @@ async function run() {
 
     // get all jobs by using category and email
     app.get("/jobs", async (req, res) => {
-      console.log("req query", req.query);
-      console.log("cooooook", req.cookies);
 
       const employerEmail = req.query.email;
       const category = req.query.category;
-      console.log("employer email", employerEmail);
-      console.log("user email email", category);
 
-     
       let query = {};
       if (employerEmail) {
         query.employerEmail = employerEmail;
@@ -165,9 +151,6 @@ async function run() {
         catQueryObj.category = category;
       }
 
-      // console.log('email', query);
-      // console.log('cat', catQueryObj);
-
       const cursor = jobsCollections.find({ ...catQueryObj, ...query });
       const result = await cursor.toArray();
 
@@ -175,13 +158,8 @@ async function run() {
     });
 
     app.get("/findjobs", verifyToken, async (req, res) => {
-      console.log("req query", req.query);
 
       const employerEmail = req.query.email;
-
-      console.log("employer email", employerEmail);
-
-      console.log("user email email", req.user.email);
 
       if (req.user.email != employerEmail) {
         res.status(403).send({ message: "Forbidden Access" });
@@ -210,19 +188,14 @@ async function run() {
     // post bid on the Project data
     app.post("/bidProject", async (req, res) => {
       const data = req.body;
-      console.log(data);
       const result = await bidProjectCollection.insertOne(data);
       res.send(result);
     });
 
     // get my bids all jobs
     app.get("/bidProject", verifyToken, async (req, res) => {
-      // const employerEmail = req.query.employerEmail;
-      // console.log('employer email', employerEmail)
-
+    
       const email = req.query.email;
-      console.log(req.query);
-      console.log("user", req.user);
 
       if (req.query.email != req.user.email) {
         return res.status(403).send({ message: "forbidden access" });
@@ -232,8 +205,7 @@ async function run() {
       if (email) {
         query.email = email;
       }
-      console.log("email", query);
-
+   
       const cursor = bidProjectCollection
         .find({ ...query })
         .sort({ status: 1 });
