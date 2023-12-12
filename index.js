@@ -70,6 +70,9 @@ async function run() {
     const categoryCollections = client.db("job_fair").collection("services");
     const jobsCollections = client.db("job_fair").collection("all_jobs");
     const bidProjectCollection = client.db("job_fair").collection("bidData");
+    const postCollections = client.db("job_fair").collection("postData");
+
+
 
     // token related api
     app.post("/jwt", async (req, res) => {
@@ -98,6 +101,39 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+
+    // post all forum 
+    app.post('/posts', async(req, res) =>{
+      try {
+        const post = req.body 
+        const result = await postCollections.insertOne(post)
+        res.send(result)
+        
+      } catch (error) {
+        console.log(error)
+      }
+    })
+
+
+
+    // get post data 
+app.get('/allpost',  async(req, res) =>{
+  try {
+    const data = req.query 
+    // console.log(data)
+    const page = parseInt(req.query.page)
+    const size = parseInt(req.query.size)
+    console.log('page', page, size)
+    const count = await postCollections.estimatedDocumentCount()
+    const result = await postCollections.find().skip(page*size).limit(size).toArray()
+    res.send({result, count})
+  } catch (error) {
+    console.log(error)
+  }
+})
+
+
 
     // post add jobs in the database
     app.post("/jobs", async (req, res) => {
